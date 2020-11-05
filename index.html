@@ -35,6 +35,7 @@
 
   var keys = {}
   var c1;
+  var cam;
   
   var config = {
         parent:"game",
@@ -57,38 +58,42 @@
   {
 
       var sky = this.add.image(0, 0, 'sky').setOrigin(0,0);
-//      this.add.rectangle(x, y, width, height, fillColor);
-//      var r1 = this.add.rectangle(0, 0, 800, 500, 0xCCCCCC).setOrigin(0,0);
-//      c1 = this.add.circle(100, 100, 100, 0x000000).setOrigin(0,0);
+      var r1 = this.add.rectangle(0, 0, 800, 500, 0xCCCCCC).setOrigin(0,0);
+      
+      //  this.add.rectangle(x, y, width, height, fillColor);
+      //  c1 = this.add.circle(100, 100, 100, 0x000000)
 
+      var shape = this.make.graphics();
+      shape.fillStyle(0x000000);
+      shape.fillCircle(200,200,100)
+
+      var mask = shape.createGeometryMask();
+      mask.setInvertAlpha()
+
+      var mask2 = shape.createGeometryMask();
+
+      r1.setMask(mask)
+      sky.setMask(mask2)
+
+      var shape = this.add.graphics();
+      shape.fillStyle(0x000000);
+      shape.fillCircle(200,200,100)
+      shape.alpha = 0.5
       
       keys.Left = this.input.keyboard.addKey('LEFT');
       keys.Right = this.input.keyboard.addKey('RIGHT');
       keys.Up = this.input.keyboard.addKey('UP');
       keys.Down = this.input.keyboard.addKey('DOWN');             
 
-
-
-      var shape = this.add.graphics();
-      shape.fillStyle(0x00000);      
-      shape.beginPath();
-      shape.moveTo(-240, 0);
-      shape.arc(-240, 0, 250, 0, Math.PI * 2);
-      shape.moveTo(240, 0);
-      shape.arc(240, 0, 250, 0, Math.PI * 2);
-      shape.fillPath()
-      shape.scale = .5
-
-      var mask = shape.createGeometryMask();      
-      sky.setMask(mask);
+       cam = this.cameras.add(0,0,800,600)
   }
 
     function update ()
   {
 
       
-      if(keys.Left.isDown){ console.log('LEFT'); c1.x = c1.x - 2; }
-	if(keys.Right.isDown){ console.log('RIGHT'); c1.x = c1.x + 2; }
+      if(keys.Left.isDown){ console.log('LEFT'); cam.x = cam.x - 2; }
+	if(keys.Right.isDown){ console.log('RIGHT');  cam.x = cam.x + 2;}
 	if(keys.Up.isDown){ console.log('UP');  c1.y = c1.y - 2; }
 	if(keys.Down.isDown){ console.log('DOWN'); c1.y = c1.y + 2; }
 
