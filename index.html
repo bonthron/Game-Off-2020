@@ -1,116 +1,210 @@
 <!DOCTYPE html>
 <html>
-  <!-- 
-       Wanderer moon
-       smiling a
-       faintly ironical smile
-       at this
-       brilliant, dew-moistened
-       summer morning,
-       a detached
-       sleepily indifferent
-       smile, a
-       wanderer's smile,
-       if I should
-       buy a shirt
-       your color and
-       put on a necktie
-       sky-blue
-       where would they carry me?
-
-       - 1917, william carlos williams
-    -->
   <head>
-    <title>jason bonthron</title>
-    <meta charset="utf-8">
-    <meta name="Description" CONTENT="Jason Bonthron. Game Off 2020">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script type="text/javascript" src="phaser.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="tachyons.min.css" />
-    <link rel="stylesheet" type="text/css" href="style.css" />
+    <title>For the Moon is Hollow and I Have Touched the Sky</title>
+    <meta http-equiv="Pragma" content="no-cache, no-store" />
+    <meta http-equiv="Expires" content="31 Dec 1997" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bacon.js/3.0.13/Bacon.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ramda/0.25.0/ramda.min.js"></script>
+    <script src="https://code.createjs.com/1.0.0/createjs.min.js"></script>
+    <script type="text/javascript">
 
+      const cjs = createjs;
 
+      //--------------------------------------------------------------------------- buildDashboard
+      function buildDashboard(DEAD_CENTER, viewPortSize){
 
-<script type="text/javascript">
+	  let dash = new cjs.Container();
 
-  var keys = {}
-  var c1;
-  var cam;
-  
-  var config = {
-        parent:"game",
-        type: Phaser.AUTO,
-        width: 800,
-        height: 600,
-        scene: {
-            preload: preload,
-            create: create,
-            update: update
-        }
-    };
+	  let viewportFrame = new cjs.Shape();
+	  viewportFrame.graphics
+	      .s("#ff0000")
+	      .dr((0 - (viewPortSize.w/2)),
+		  (0 - (viewPortSize.h/2)),
+		  viewPortSize.w,
+		  viewPortSize.h)
+	  viewportFrame.x = DEAD_CENTER.x;
+	  viewportFrame.y = DEAD_CENTER.y;	  
 
-    function preload ()
-    {
-	this.load.image('sky', 'assets/sky.png');
-    }
+	  let sighting = new cjs.Shape();
+	  sighting.graphics
+	      .s("#ff0000")
+	      .dc(0,0,60)
+	  sighting.x = DEAD_CENTER.x;
+	  sighting.y = DEAD_CENTER.y;
 
-    function create ()
-  {
+	  dash.addChild(viewportFrame)
+	  dash.addChild(sighting)	  
 
-      var sky = this.add.image(0, 0, 'sky').setOrigin(0,0);
-      var r1 = this.add.rectangle(0, 0, 800, 500, 0xCCCCCC).setOrigin(0,0);
-      
-      //  this.add.rectangle(x, y, width, height, fillColor);
-      //  c1 = this.add.circle(100, 100, 100, 0x000000)
-
-      var shape = this.make.graphics();
-      shape.fillStyle(0x000000);
-      shape.fillCircle(200,200,100)
-
-      var mask = shape.createGeometryMask();
-      mask.setInvertAlpha()
-
-      var mask2 = shape.createGeometryMask();
-
-      r1.setMask(mask)
-      sky.setMask(mask2)
-
-      var shape = this.add.graphics();
-      shape.fillStyle(0x000000);
-      shape.fillCircle(200,200,100)
-      shape.alpha = 0.5
-      
-      keys.Left = this.input.keyboard.addKey('LEFT');
-      keys.Right = this.input.keyboard.addKey('RIGHT');
-      keys.Up = this.input.keyboard.addKey('UP');
-      keys.Down = this.input.keyboard.addKey('DOWN');             
-
-       cam = this.cameras.add(0,0,800,600)
-  }
-
-    function update ()
-  {
+	  return dash;
+      }
 
       
-      if(keys.Left.isDown){ console.log('LEFT'); cam.x = cam.x - 2; }
-	if(keys.Right.isDown){ console.log('RIGHT');  cam.x = cam.x + 2;}
-	if(keys.Up.isDown){ console.log('UP');  c1.y = c1.y - 2; }
-	if(keys.Down.isDown){ console.log('DOWN'); c1.y = c1.y + 2; }
+      //--------------------------------------------------------------------------- init
+      function init(){
 
-//	c1.scale = c1.scale + 0.005;
-    }
+	  let keys = {arrowup:0, arrowdown:0, arrowleft:0, arrowright:0};
+
+	  document.onkeydown = (e) => {
+	      if(e.repeat){return;};
+	      let k = e.key.toLowerCase();
+	      if(keys.hasOwnProperty(k)){ keys[k] = 1; };
+	  };
+	  document.onkeyup = (e) => {
+	      if(e.repeat){return;};
+	      let k = e.key.toLowerCase();
+	      if(keys.hasOwnProperty(k)){ keys[k] = 0; };
+	  };
+	  
+          cjs.Ticker.framerate = 60;
+          cjs.Ticker.timingMode = cjs.Ticker.RAF;
+          
+          let stage = new cjs.Stage("canvas1");
+          cjs.Ticker.addEventListener('tick', stage);
+          stage.x = stage.y = 0.5;
 
 
-    window.onload = function(){
-	var game = new Phaser.Game(config);
-    }
-  
-</script>
-    
-    
+	  const DEAD_CENTER = {
+	      x:(stage.canvas.width/2),
+	      y:(stage.canvas.height/2)
+	  };
+
+	  let trackpoint = { x: DEAD_CENTER.x, y: DEAD_CENTER.y };
+	  
+	  const viewPortSize = {w:650, h:350}
+	  
+	  let dash = buildDashboard(DEAD_CENTER, viewPortSize);
+	  
+	  let moon1 = new cjs.Container();
+	  moon1.x = DEAD_CENTER.x;
+	  moon1.y = DEAD_CENTER.y;	  	  
+
+	  let moon2 = new cjs.Container();
+	  moon2.x = DEAD_CENTER.x;
+	  moon2.y = DEAD_CENTER.y;	  
+
+	  var texture = new cjs.Bitmap(queue.getResult("texture"));
+	  texture.x = - 1816;
+	  texture.y = - 1816;
+
+	  var texture2 = texture.clone();
+	  texture2.x = - 1816;
+	  texture2.y = - 1816;
+	  
+	  var shadow = new cjs.Bitmap(queue.getResult("shadow"));
+	  shadow.x = - 1816;
+	  shadow.y = - 1816;	  
+	  
+	  
+	  const MIN_SIZE = 400;
+	  
+	  let blackCircle = new cjs.Shape();
+	  blackCircle.graphics.s("#fff").f("#333").dc(0,0, MIN_SIZE)
+	  
+	  let mask = new cjs.Shape();
+	  mask.graphics
+	      .f("#000000")
+              .dc(0,0,100)
+
+	  mask.x = moon2.x + 400;
+          mask.y = moon2.y;
+
+	  let trackdot = new cjs.Shape();
+	  trackdot.graphics.f("#ff0000").dc(0,0,6)
+	  trackdot.x = 200
+	  
+	  moon1.addChild(texture);
+	  moon1.addChild(shadow);	  	  
+	  moon1.addChild(trackdot);
+	  
+	  mask.scale = 0.1;
+	  
+	  moon2.addChild(texture2);
+	  moon2.addChild(blackCircle);	  
+	  moon2.mask = mask;
+
+	  stage.addChild(moon1);
+	  stage.addChild(moon2);	  		   	  
+	  stage.addChild(dash);	  		   
+
+//	  moon1.scale = 0.25;
+
+	  let SSS = 0.25
+	  
+	  cjs.Tween.get({scale:0.2}).wait(500).to({scale:1.5}, (20 * 1000)).addEventListener("change", (evt) => {
+	      let s = evt.target.target.scale;
+	      SSS = s;
+
+	      mask.scale = s;
+	  });
+
+	  cjs.Tween.get(moon1).wait(500).to({rotation:90}, (20 * 1000))
+	  cjs.Tween.get(blackCircle).wait(500).to({alpha:0}, (20 * 1000))
+	  
+
+          cjs.Ticker.addEventListener('tick', function(){
+
+	      if(keys.arrowdown) { trackpoint.y-=2 };
+	      if(keys.arrowup)   { trackpoint.y+=2 };
+	      if(keys.arrowleft) { trackpoint.x+=2 };
+	      if(keys.arrowright){ trackpoint.x-=2 };
+
+	      let MAX_W = ((moon1.scale * 3632)/2) - (viewPortSize.w/2);
+	      let MAX_H = ((moon1.scale * 3632)/2) - (viewPortSize.h/2);
+	      
+	      if(trackpoint.x > DEAD_CENTER.x + MAX_W){ trackpoint.x = DEAD_CENTER.x + MAX_W; };
+	      if(trackpoint.x < DEAD_CENTER.x - MAX_W){ trackpoint.x = DEAD_CENTER.x - MAX_W; };
+	      if(trackpoint.y > DEAD_CENTER.y + MAX_H){ trackpoint.y = DEAD_CENTER.y + MAX_H; };
+	      if(trackpoint.y < DEAD_CENTER.y - MAX_H){ trackpoint.y = DEAD_CENTER.y - MAX_H; };
+
+	      moon1.scale = SSS;
+	      moon1.x = trackpoint.x;
+	      moon1.y = trackpoint.y;
+	      
+	      let pt = moon1.localToGlobal(trackdot.x, trackdot.y);
+	      mask.x = pt.x;
+	      mask.y = pt.y;
+	  });	  
+	  
+      }
+	  
+
+	  // function distance(pt1, pt2) {  
+	  // return Math.sqrt(Math.pow((pt1.x - pt2.x), 2) + Math.pow((pt1.y - pt2.y), 2));
+	  // };
+
+
+    var queue = new createjs.LoadQueue(true);
+    queue.on("complete", function(){ init(); });    
+    queue.on("error", function(e){ console.log(e); });    
+    queue.loadManifest([
+        {id:"texture", src:"moonOpt.jpg"},
+        {id:"shadow", src:"shadow.png"}	
+    ]);
+      
+    </script>
+
+    <style>
+      body {
+          font-family: arial;
+          font-size:16px;
+          color:#222;
+          text-align:center;
+      }
+      canvas { border:1px solid #000; display:block; margin:0px auto;}
+    </style>
+
   </head>
-
   <body>
-    <div id="game"></div>
+
+    
+    <!-- <canvas id="canvas1" width="1200" height="800"></canvas> -->
+    <!-- <canvas id="canvas1" width="650" height="350"></canvas> -->
+
+    <canvas id="canvas1" width="1200" height="800"></canvas>
+    
   </body>
 </html>
