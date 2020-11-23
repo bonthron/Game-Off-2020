@@ -85,33 +85,9 @@
 	  var UPPER_SCALE = 0.25;
 	  
 	  let MASK = new cjs.Shape();
-	  MASK.graphics.f("#000000").dc(0,0,200);
+	  MASK.graphics.f("#000000").dc(0,0,100);
 	  
-	  var moonQueue = [];
-	  var scaleQueue = [];
-	  var maskQueue = [];	  
-	  
-	  let firstMoon = makeMoon();
-	  moonQueue.push(firstMoon);
-	  stage.addChild(firstMoon);
-	  scaleQueue.push(0.25);
-	  maskQueue.push(MASK.clone(true));
-	  
-	  let secondMoon = makeMoon();
-	  moonQueue.push(secondMoon);
-	  stage.addChild(secondMoon);	  
-	  scaleQueue.push(0.25);	  
-	  maskQueue.push(MASK.clone(true))
-
-	  let thirdMoon = makeMoon();
-	  moonQueue.push(thirdMoon);
-	  thirdMoon.visible = false;
-	  stage.addChild(thirdMoon);	  
-	  scaleQueue.push(0.25);	  
-	  maskQueue.push(MASK.clone(true))
-
-	  
-	  console.log(moonQueue, scaleQueue, maskQueue)
+	  let moonCount = 0;
 
 	  //-------------------------------------------------------- makeMoon
 	  function makeMoon(){
@@ -125,65 +101,73 @@
 	      c.addChild(bit);
 	      
 	      let trackdot = new cjs.Shape();
-	      trackdot.graphics.f("#ff0000").dc(0,0,6)
-	      trackdot.x = 200
+	      trackdot.graphics.f("#000").dc(0,0,104)
+	      trackdot.x = 200;
+	      trackdot.alpha = 0.2;
 	      c.trackdot = trackdot;
 	      c.addChild(trackdot);
 
+	      c.mask = MASK.clone(true);
+	      
+	      c.name = moonCount;
+	      moonCount++;
+	      
+	      c.moonScale = 0.25;
+	      c.maskScale = 0.25;
+	      c.visible = false;
+
+	      c.rotation = Math.floor(Math.random() * 358) + 1  
 	      return c;
 	  }
 
-	  
+	  let INDEX = 0;
+	  let ARR = []
+	  ARR.push(makeMoon())
+	  ARR.push(makeMoon())	  
+	  ARR[0].visible = true;
+	  ARR[0].mask = null;
+	  ARR[1].visible = true;
+	  stage.addChild(ARR[0])
+	  stage.addChild(ARR[1])	  
+
+
 	  //-------------------------------------------------------- runLevel
 	  function runLevel(){
+	      
+	      //test
+	      if(INDEX > 0){
+		  cjs.Tween.get(ARR[INDEX]).to({maskScale:20}, 1000)
+		  ARR[INDEX+1].visible = true;
+		  trackpoint.x = DEAD_CENTER.x;
+		  trackpoint.y = DEAD_CENTER.y;		  
+	      };
+
+	      for(var i = 0; i < INDEX; i++){
+		  if(i < INDEX + 2){
+		      stage.removeChild(ARR[i])
+		  }
+	      };
 
 	      stage.removeChild(dash);
 
-	      moonQueue.shift();
-	      scaleQueue.shift();
-	      maskQueue.shift();
-	      
 	      let m = makeMoon();
-	      m.visible = false;
-	      stage.addChild(m);
-	      
-	      moonQueue.push(m);
-	      scaleQueue.push(0.25)	      
-	      maskQueue.push(MASK.clone(true))
-
-	      moonQueue[1].visible = true;
-	      
-	      moonQueue[0].mask = null;
-	      moonQueue[1].mask = maskQueue[1];
-	      moonQueue[2].mask = null;
-
+	      ARR.push(m);
+	      stage.addChild(m)
 	      stage.addChild(dash);
-	      
-	      var t = cjs.Tween.get({N:0.25}).to({N:1.5}, (8 * 1000)).call(() => {
-		  let t2 = cjs.Tween.get(MASK).to({scale:6}, (1 * 1000)).call(() => {
-//		      moonQueue[1].mask = null;
-//		      stage.removeChild(moonQueue[0]);
-//		      moonQueue.shift();
-//		      scaleQueue.shift();
-		      runLevel();
-		  })
-	      })
 
-	      t.addEventListener("change", (evt) => {
-		  
-		  let s = evt.target.target.N;
-		  scaleQueue[0] = s;
-		  maskQueue[1].scale = s;		  
-	      })
+	      INDEX++
+
+	      let rotation = (Math.floor(Math.random() * 358) + 1);
 	      
+	      cjs.Tween.get(ARR[INDEX - 1]).to({moonScale:1.5}, (8 * 1000))
+	      cjs.Tween.get(ARR[INDEX]).to({maskScale:1.5}, (8 * 1000))
+
+//	      cjs.Tween.get(ARR[INDEX - 1]).to({rotation: rotation }, (10 * 1000))
+	      cjs.Tween.get({}).wait(7 * 1000).call(() => { runLevel();  })	      
 	  }
-
-//	  cjs.Tween.get(moon1).wait(500).to({rotation:90}, (20 * 1000))
 
 
           cjs.Ticker.addEventListener('tick', function(){
-
-	      if(moonQueue.length < 2){ return; };
 	      
 	      if(keys.arrowdown) { trackpoint.y-=2 };
 	      if(keys.arrowup)   { trackpoint.y+=2 };
@@ -192,23 +176,28 @@
 
 //	      let MAX_W = ((moon1.scale * 3632)/2) - (viewPortSize.w/2);
 //	      let MAX_H = ((moon1.scale * 3632)/2) - (viewPortSize.h/2);
-	      
-	//      if(trackpoint.x > DEAD_CENTER.x + MAX_W){ trackpoint.x = DEAD_CENTER.x + MAX_W; };
+//            if(trackpoint.x > DEAD_CENTER.x + MAX_W){ trackpoint.x = DEAD_CENTER.x + MAX_W; };
 //	      if(trackpoint.x < DEAD_CENTER.x - MAX_W){ trackpoint.x = DEAD_CENTER.x - MAX_W; };
 //	      if(trackpoint.y > DEAD_CENTER.y + MAX_H){ trackpoint.y = DEAD_CENTER.y + MAX_H; };
 //	      if(trackpoint.y < DEAD_CENTER.y - MAX_H){ trackpoint.y = DEAD_CENTER.y - MAX_H; };
 
+	      ARR[INDEX - 1].x = trackpoint.x;
+	      ARR[INDEX - 1].y = trackpoint.y;	      
 
-	      moonQueue[0].scale = scaleQueue[0];
-	      moonQueue[1].scale = scaleQueue[1];
-	      moonQueue[2].scale = scaleQueue[2];	      	      
+	      ARR[INDEX - 1].scale = ARR[INDEX - 1].moonScale;
+	      ARR[INDEX].scale = ARR[INDEX].moonScale;
+	      
+	      ARR.forEach((m) => {
+//		  m.scale = m.moonScale;
+		  if(m.mask){
+		      m.mask.scale = m.maskScale;
+		  };
+	      })
 
-	      moonQueue[0].x = trackpoint.x;
-	      moonQueue[0].y = trackpoint.y;	      
-
-	      let transPt = moonQueue[0].localToGlobal(moonQueue[0].trackdot.x, moonQueue[0].trackdot.y);
-	      maskQueue[1].x = transPt.x;
-	      maskQueue[1].y = transPt.y;
+	      let transPt = ARR[INDEX - 1].localToGlobal(ARR[INDEX - 1].trackdot.x, ARR[INDEX - 1].trackdot.y);
+	      ARR[INDEX].mask.x = transPt.x;
+	      ARR[INDEX].mask.y = transPt.y;
+	      
 	  });	  
 	  
 
