@@ -25,17 +25,18 @@
 
 	  let viewportFrame = new cjs.Shape();
 	  viewportFrame.graphics
-	      .s("#ff0000")
+	      .s("#ffffff")
 	      .dr((0 - (viewPortSize.w/2)),
 		  (0 - (viewPortSize.h/2)),
 		  viewPortSize.w,
 		  viewPortSize.h)
 	  viewportFrame.x = DEAD_CENTER.x;
 	  viewportFrame.y = DEAD_CENTER.y;	  
-
+	  viewportFrame.alpha = 0.3;
+	  
 	  let sighting = new cjs.Shape();
 	  sighting.graphics
-	      .s("#ff0000")
+	      .s("#ffff")
 	      .dc(0,0,60)
 	  sighting.x = DEAD_CENTER.x;
 	  sighting.y = DEAD_CENTER.y;
@@ -100,11 +101,15 @@
 	      bit.x = bit.y = -1816;
 	      c.addChild(bit);
 
-//	      let s = new cjs.Bitmap(queue.getResult("shadow"));
-//	      s.regX = s.regY = 1816;
-//	      s.rotation = Math.floor(Math.random() * 358) + 1
-//	      c.addChild(s);
-	      
+
+	      for(var i = 0; i < 10; i++){
+		  let x = new cjs.Bitmap(queue.getResult("shadow"));
+		  x.scale = random(0,20)
+		  x.regX = x.regY = random(-1000,1000)
+		  x.rotation = Math.floor(Math.random() * 358) + 1;
+		  x.alpha = Math.random();
+		  c.addChild(x);
+	      }
 
 	      let shade = new cjs.Shape();
 	      shade.graphics.f("#000000").dc(0,0,2000)
@@ -118,7 +123,8 @@
 	      c.trackdot = trackdot;
 	      c.addChild(trackdot);
 
-	      c.mask = MASK.clone(true);
+	      c.mask = new cjs.Shape();
+	      c.mask.graphics.f("#000000").dc(0,0,random(90,120));
 	      
 	      c.name = moonCount;
 	      moonCount++;
@@ -235,7 +241,7 @@
     queue.on("error", function(e){ console.log(e); });    
     queue.loadManifest([
         {id:"moonJPG", src:"moonOpt.jpg"},
-        {id:"shadow", src:"shadow.png"}	
+        {id:"shadow", src:"shadow5.png"},	
     ]);
       
     </script>
