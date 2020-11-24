@@ -100,6 +100,12 @@
 	      bit.x = bit.y = -1816;
 	      c.addChild(bit);
 
+//	      let s = new cjs.Bitmap(queue.getResult("shadow"));
+//	      s.regX = s.regY = 1816;
+//	      s.rotation = Math.floor(Math.random() * 358) + 1
+//	      c.addChild(s);
+	      
+
 	      let shade = new cjs.Shape();
 	      shade.graphics.f("#000000").dc(0,0,2000)
 	      shade.alpha = 0.2;
@@ -108,7 +114,7 @@
 	      
 	      let trackdot = new cjs.Shape();
 	      trackdot.graphics.f("#ccc").dc(0,0,1)
-	      trackdot.x = 200;
+	      trackdot.x = random(100,300)
 	      c.trackdot = trackdot;
 	      c.addChild(trackdot);
 
@@ -123,7 +129,7 @@
 	      
 	      c.rotation = Math.floor(Math.random() * 358) + 1
 	      c.rotationDir = (Math.random() > .4) ? 1 : 0;
-
+	      c.rotationAmt = random(1,3)/10;
 	      
 	      return c;
 	  }
@@ -135,7 +141,7 @@
 	  ARR.push(makeMoon())
 	  ARR[0].visible = true;
 	  ARR[0].mask = null;
-	  ARR[0].shade.visible = false;
+	  ARR[0].shade.alpha = 0;
 	  
 	  stage.addChild(ARR[0])
 
@@ -152,7 +158,7 @@
 
 	      stage.removeChild(dash);
 	      
-	      cjs.Tween.get(next.mask).to({scale:20}, 1000).call(()=>{
+	      cjs.Tween.get(next.mask).to({scale:20}, 3000).call(()=>{
 		  stage.removeChild(current);
 		  next.mask = null;
 	      })
@@ -170,18 +176,15 @@
 	  //-------------------------------------------------------- Ticker
           cjs.Ticker.addEventListener('tick', function(){
 	      
-	      
 	      let currentMoon = ARR[INDEX];
 	      let nextMoon = ARR[INDEX + 1];
-
 	      
-	      if(keys.arrowdown) { currentMoon.y-= 2 };
-	      if(keys.arrowup)   { currentMoon.y+= 2 };
-	      if(keys.arrowleft) { currentMoon.x+= 2 };
-	      if(keys.arrowright){ currentMoon.x-= 2 };
+	      if(keys.arrowdown) { currentMoon.y-= 2 + (currentMoon.moonScale / 2)};
+	      if(keys.arrowup)   { currentMoon.y+= 2 + (currentMoon.moonScale / 2)};
+	      if(keys.arrowleft) { currentMoon.x+= 2 + (currentMoon.moonScale / 2)};
+	      if(keys.arrowright){ currentMoon.x-= 2 + (currentMoon.moonScale / 2)};
 
-	      
-	      let scaleAmt = ((currentMoon.moonScale / 6) / 50)
+	      let scaleAmt = ((currentMoon.moonScale / 2) / 120)
 	      
 	      if(currentMoon.moonScale > 1){
 		  nextMoon.moonScale += 0.001;
@@ -192,17 +195,19 @@
 		  }else{
 		      nextMoon.rotation -= 0.1;
 		  };
+		  
+		  currentMoon.shade.alpha += 0.001;
 	      }
-	      
+
 	      if(currentMoon.moonScale < 3){
 		  currentMoon.moonScale += scaleAmt;
 		  nextMoon.maskScale += scaleAmt;
 	      }
 
 	      if(currentMoon.rotationDir == 1){
-		  currentMoon.rotation += 0.1;
+		  currentMoon.rotation += currentMoon.rotationAmt;
 	      }else{
-		  currentMoon.rotation -= 0.1;
+		  currentMoon.rotation -= currentMoon.rotationAmt;
 	      };
 	      
 	      let transPt = currentMoon.localToGlobal(currentMoon.trackdot.x, currentMoon.trackdot.y);
@@ -221,7 +226,10 @@
 
       }
 	  
-
+      function random(min, max) {
+	  return Math.floor(Math.random() * (max - min + 1) + min);
+      }
+      
     var queue = new createjs.LoadQueue(true);
     queue.on("complete", function(){ init(); });    
     queue.on("error", function(e){ console.log(e); });    
@@ -246,7 +254,7 @@
   <body>
 
     
-    <!-- <canvas id="canvas1" width="1200" height="800"></canvas> -->
+
     <!-- <canvas id="canvas1" width="650" height="350"></canvas> -->
     <a href="javascript:stop()" style="color:#ccc;">stop</a><br />
 
