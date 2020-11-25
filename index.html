@@ -42,11 +42,27 @@
 	  viewportFrame.y = DEAD_CENTER.y;	  
 	  viewportFrame.alpha = 0.4;
 
+	  let crash = new cjs.Shape();
+	  crash.graphics
+	      .f("#ff0000")
+	      .dr((0 - (viewPortSize.w/2)),
+		  (0 - (viewPortSize.h/2)),
+		  viewPortSize.w,
+		  viewPortSize.h)
+
+	  crash.x = DEAD_CENTER.x;
+	  crash.y = DEAD_CENTER.y;	  
+	  crash.alpha = 0.2;
+	  crash.visible = false;
+
 	  let sight = new cjs.Bitmap(queue.getResult("sight"));
 	  sight.x = DEAD_CENTER.x - 60;
 	  sight.y = DEAD_CENTER.y - 60;
 	  sight.alpha = 0.9;
 
+	  dash.crash = crash;
+
+	  dash.addChild(crash);
 	  dash.addChild(viewportFrame);
 	  dash.addChild(sight)	  
 
@@ -135,7 +151,7 @@
 	      c.addChild(trackdot);
 
 	      c.mask = new cjs.Shape();
-	      c.mask.graphics.f("#000000").dc(0,0,random(90,120));
+	      c.mask.graphics.f("#000000").dc(0,0,100);
 	      
 	      c.name = moonCount;
 	      moonCount++;
@@ -145,7 +161,7 @@
 	      c.maskScale = 0.25;	      
 	      
 	      c.rotation = Math.floor(Math.random() * 358) + 1
-	      c.rotationDir = (Math.random() > .4) ? 1 : 0;
+	      c.rotationDir = (Math.random() > .5) ? 1 : 0;
 	      c.rotationAmt = random(1,3)/10;
 	      
 	      return c;
@@ -161,7 +177,7 @@
 	  ARR[0].shade.alpha = 0;
 	  
 	  stage.addChild(ARR[0])
-
+	  
 	  // nextMoon
 	  ARR.push(makeMoon())
 	  ARR[1].visible = true;
@@ -169,15 +185,23 @@
 	  
 	  stage.addChild(dash);
 
-
+	  
 	  var soundProps = new createjs.PlayPropsConfig().set({loop: -1})
 	  var instance = cjs.Sound.play("sound", soundProps);
 
 
-	  
 	  //-------------------------------------------------------- nextLevel
-	  function nextLevel(current, next){
+	  function nextLevel(current, next, transPt){
 
+
+	      if(!concentric(DEAD_CENTER,70,transPt,(100 * next.maskScale))){
+		  dash.crash.visible = true;
+		  cjs.Tween.get(dash.crash)
+		      .wait(500).to({visible:false})
+		      .wait(200).to({visible:true})
+		      .wait(500).to({visible:false})
+	      }
+	      
 	      stage.removeChild(dash);
 	      
 	      cjs.Tween.get(next.mask).to({scale:20}, 3000).call(()=>{
@@ -245,30 +269,41 @@
 	      currentMoon.scale = currentMoon.moonScale;
 	      nextMoon.scale = nextMoon.moonScale;	      
 	      nextMoon.mask.scale = nextMoon.maskScale;
-
+	      
 	      if(currentMoon.moonScale > 3) {
-		  nextLevel(currentMoon, nextMoon);
+		  nextLevel(currentMoon, nextMoon, transPt);
 	      }	      
 
 	  });	  
 
       }
-	  
+      
       function random(min, max) {
 	  return Math.floor(Math.random() * (max - min + 1) + min);
       }
       
+      function getDistance(pt1, pt2){
+	  var distance = Math.sqrt(Math.pow((pt2.x - pt1.x),2) + Math.pow((pt2.y - pt1.y),2));
+	  return distance;
+      }
+
+      function concentric(center1, radius1, center2, radius2){
+	  var d = getDistance(center1, center2);
+	  return ((d + radius1) < radius2);
+      }
+
+      
       var queue = new createjs.LoadQueue(true);
       queue.installPlugin(cjs.Sound);      
       queue.on("complete", function(){ READY = true; 	      init(); });    
-    queue.on("error", function(e){ console.log(e); });    
+      queue.on("error", function(e){ console.log(e); });    
 
       queue.loadManifest([
-        {id:"moonJPG", src:"moonOpt.jpg"},
-        {id:"shadow", src:"shadow5.png"},
-        {id:"sight", src:"sight.png"},
-        {id:"sound", src:"DescenteInfinie.ogg"}	
-    ]);
+          {id:"moonJPG", src:"moonOpt.jpg"},
+          {id:"shadow", src:"shadow5.png"},
+          {id:"sight", src:"sight.png"},
+          {id:"sound", src:"DescenteInfinie.ogg"}	
+      ]);
       
     </script>
 
@@ -298,10 +333,4 @@
 
   </body>
 </html>
-(- 3632 1100)
-(/ 2532 2.0)
-1266
 
-
-(- 4000 3632)
-(/ 368.0 2)
