@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>For the Moon is Hollow and I Have Touched the Sky</title>
+
     <meta http-equiv="Pragma" content="no-cache, no-store" />
     <meta http-equiv="Expires" content="31 Dec 1997" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -29,7 +30,7 @@
          - 1917, william carlos williams
       -->
     
-    <script src="https://code.createjs.com/1.0.0/createjs.min.js"></script>
+    <script src="createjs.min.js"></script>
     <script type="text/javascript">
 
       const cjs = createjs;
@@ -45,24 +46,37 @@
               init()
           }
       }
+
+
       
 
       //--------------------------------------------------------------------------------- init
       function init(){
 
-          let keys = {arrowup:0, arrowdown:0, arrowleft:0, arrowright:0};
+          let codes = {38:"arrowup", "ArrowUp":"arrowup", 40:"arrowdown", "ArrowDown":"arrowdown", 37:"arrowleft", "ArrowLeft":"arrowleft", 39:"arrowright", "ArrowRight":"arrowright", 32: "spacebar", " ":"spacebar" };
+
+	  let KEYS = {arrowup:false, arrowdown:false, arrowleft:false, arrowright:false, spacebar:false};
 
           document.onkeydown = (e) => {
               if(e.repeat){return;};
-              let k = e.key.toLowerCase();
-              if(keys.hasOwnProperty(k)){ keys[k] = 1; };
+	      var c = event.key || event.keyCode;
+	      let k = codes[c];
+              if(KEYS.hasOwnProperty(k) && (k != "spacebar")){ KEYS[k] = true; };
+
+	      if(k == "spacebar"){
+		  KEYS.spacebar = !KEYS.spacebar;
+		  soundInstance.paused = !soundInstance.paused;
+	      };
           };
+	  
           document.onkeyup = (e) => {
               if(e.repeat){return;};
-              let k = e.key.toLowerCase();
-              if(keys.hasOwnProperty(k)){ keys[k] = 0; };
-          };
+	      var c = event.key || event.keyCode;
+	      let k = codes[c];
 
+              if(KEYS.hasOwnProperty(k) && (k != "spacebar")){ KEYS[k] = false; };
+          };
+	  
           
           cjs.Ticker.framerate = 60;
           cjs.Ticker.timingMode = cjs.Ticker.RAF;
@@ -72,8 +86,8 @@
           stage.x = stage.y = 0.5;
 
 
-          var soundProps = new createjs.PlayPropsConfig().set({loop: -1})
-          var instance = cjs.Sound.play("sound", soundProps);
+          let soundProps = new createjs.PlayPropsConfig().set({loop: -1})
+          let soundInstance = cjs.Sound.play("sound", soundProps);
 
 
           let MOON_SIZE = new cjs.Bitmap(queue.getResult("moonJPG")).getBounds().width;
@@ -86,7 +100,7 @@
           const viewPortSize = {w:650, h:290};
           
 
-          //------------------------------------------------------------------------------- buildDashboard
+          //---------------------------------------------------------------------------- buildDashboard
           function buildDashboard(DEAD_CENTER, viewPortSize){
 
               let dash = new cjs.Container();
@@ -271,14 +285,16 @@
 	  
           //--------------------------------------------------------------------------------- tick
           cjs.Ticker.addEventListener('tick', function(){
-              
+
+	      if(KEYS.spacebar){ return; }
+	      
               let currentMoon = ARR[INDEX];
               let nextMoon = ARR[INDEX + 1];
               
-              if(keys.arrowdown) { currentMoon.y-= 2 + (currentMoon.moonScale / 2)};
-              if(keys.arrowup)   { currentMoon.y+= 2 + (currentMoon.moonScale / 2)};
-              if(keys.arrowleft) { currentMoon.x+= 2 + (currentMoon.moonScale / 2)};
-              if(keys.arrowright){ currentMoon.x-= 2 + (currentMoon.moonScale / 2)};
+              if(KEYS.arrowdown) { currentMoon.y-= 2 + (currentMoon.moonScale / 2)};
+              if(KEYS.arrowup)   { currentMoon.y+= 2 + (currentMoon.moonScale / 2)};
+              if(KEYS.arrowleft) { currentMoon.x+= 2 + (currentMoon.moonScale / 2)};
+              if(KEYS.arrowright){ currentMoon.x-= 2 + (currentMoon.moonScale / 2)};
               
               let scaleAmt = ((currentMoon.moonScale / 2) / scaleDivisor)
 
