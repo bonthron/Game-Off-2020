@@ -36,18 +36,25 @@
       const cjs = createjs;
       
       (function () {
+	      
+          cjs.Ticker.framerate = 60;
+          cjs.Ticker.timingMode = cjs.Ticker.RAF;
 
 	  const viewPortSize = { w:650, h:290 };
 	  
-	  var KEYS = {arrowup:false, arrowdown:false, arrowleft:false, arrowright:false, spacebar:false};
-	  var soundInstance;
+	  let KEYS = {arrowup:false, arrowdown:false, arrowleft:false, arrowright:false, spacebar:false};
+	  let soundInstance;
 
-	  var PAUSED = false;
-          var DEAD_CENTER;
-          var INDEX = 0;
-          var ARR = [];
+	  let PAUSED = false;
+          let DEAD_CENTER;
+          let INDEX = 0;
+          let ARR = [];
+	  let DASH;
+	  let STAGE;
+	  let SCALE_DIVISOR = 120;
+          let MOON_COUNT = 0;
+
 	  
-
 	  //--------------------------------------------------------------------------------- initKeys
 	  function initKeys(){
 	      
@@ -134,9 +141,7 @@
           }
 
                     
-          //------------------------------------------------------------------------------ makeMoon
-          let moonCount = 0;
-          
+          //------------------------------------------------------------------------------ makeMoon     
           function makeMoon(){
 
 	      let c = new cjs.Container();
@@ -146,8 +151,8 @@
 	      c.mask = new cjs.Shape();
 	      c.mask.graphics.f("#000000").dc(0,0,100);
 	      
-	      c.name = moonCount;
-	      moonCount++;
+	      c.name = MOON_COUNT;
+	      MOON_COUNT++;
 	      c.visible = false;
 
 	      c.moonScale = 0.25;
@@ -193,17 +198,73 @@
 	      
 	      return c;
           }
+
+	      
+          //----------------------------------------------------------------------------- nextLevel
+          function nextLevel(current, next, transPt){
+	      
+	      let hit = !concentric(DEAD_CENTER,70,transPt,(100 * next.maskScale));
+	      
+	      if(hit){
+		  
+		  SCALE_DIVISOR -= 20;
+		  if(SCALE_DIVISOR < 20){ gameOver(); return; };
+		  
+                  cjs.Tween.get(DASH.crash)
+		      .to({visible:true})                 
+		      .wait(500)
+		      .to({visible:false})
+		      .wait(200)
+		      .to({visible:true})
+		      .wait(500)
+		      .to({visible:false})
+                  
+                  next.mask.x = DEAD_CENTER.x;
+                  next.mask.y = DEAD_CENTER.y;
+		  
+	      }else{
+		  
+                  DASH.pass.visible = true;
+                  cjs.Tween.get(DASH.pass)
+		      .to({visible:true})
+		      .wait(300)
+		      .to({visible:false})
+	      };
+	      
+	      STAGE.removeChild(DASH);
+	      
+	      cjs.Tween.get(next.mask).to({scale:6, x:DEAD_CENTER.x, y:DEAD_CENTER.y}, 1000).call(()=>{
+                  STAGE.removeChild(current);
+                  next.mask = null;
+	      });
+	      
+	      let m = makeMoon();
+	      STAGE.addChild(m);
+	      STAGE.addChild(DASH);           
+	      
+	      ARR.push(m);
+	      INDEX++
+	      
+	      for(var i=0; i < ARR.length; i++){ // remove old moons
+                  if(i < (INDEX-1)){ ARR[i] = null; };
+	      };
+          }
 	  
+	      
+          //------------------------------------------------------------------------------ gameOver
+          function gameOver(){
+
+	      togglePause();
+	      alert('game over');
+	  }
+
 	  
 	  //--------------------------------------------------------------------------------- init
 	  function init(){
-	      
-              cjs.Ticker.framerate = 60;
-              cjs.Ticker.timingMode = cjs.Ticker.RAF;
               
-              let stage = new cjs.Stage("canvas1");
-              cjs.Ticker.addEventListener('tick', stage);
-              stage.x = stage.y = 0.5;
+              STAGE = new cjs.Stage("canvas1");
+              cjs.Ticker.addEventListener('tick', STAGE);
+              STAGE.x = STAGE.y = 0.5;
 
 	      initKeys();
 	      
@@ -211,8 +272,8 @@
               soundInstance = cjs.Sound.play("sound", soundProps);
 
 	      DEAD_CENTER = {
-		  x:(stage.canvas.width/2),
-		  y:(stage.canvas.height/2)
+		  x:(STAGE.canvas.width/2),
+		  y:(STAGE.canvas.height/2)
               };
 
               // currentMoon
@@ -220,71 +281,18 @@
               ARR[0].visible = true;
               ARR[0].mask = null;
               ARR[0].shade.alpha = 0;
-              stage.addChild(ARR[0])
+              STAGE.addChild(ARR[0])
               
               // nextMoon
               ARR.push(makeMoon())
               ARR[1].visible = true;
-              stage.addChild(ARR[1])
+              STAGE.addChild(ARR[1])
 
 
-              let dash = buildDashboard(DEAD_CENTER, viewPortSize);          
-              stage.addChild(dash);
+              DASH = buildDashboard(DEAD_CENTER, viewPortSize);          
+              STAGE.addChild(DASH);
 
-	      var scaleDivisor = 120;
-	      
-	      
-              //----------------------------------------------------------------------------- nextLevel
-              function nextLevel(current, next, transPt){
 
-		  let hit = !concentric(DEAD_CENTER,70,transPt,(100 * next.maskScale));
-
-		  if(hit){
-
-		      scaleDivisor -= 20;
-		      if(scaleDivisor < 20){ gameOver(); return; };
-		      
-                      cjs.Tween.get(dash.crash)
-			  .to({visible:true})                 
-			  .wait(500)
-			  .to({visible:false})
-			  .wait(200)
-			  .to({visible:true})
-			  .wait(500)
-			  .to({visible:false})
-                      
-                      next.mask.x = DEAD_CENTER.x;
-                      next.mask.y = DEAD_CENTER.y;
-		      
-		  }else{
-		      
-                      dash.pass.visible = true;
-                      cjs.Tween.get(dash.pass)
-			  .to({visible:true})
-			  .wait(300)
-			  .to({visible:false})
-		  };
-		  
-		  stage.removeChild(dash);
-		  
-		  cjs.Tween.get(next.mask).to({scale:6, x:DEAD_CENTER.x, y:DEAD_CENTER.y}, 1000).call(()=>{
-                      stage.removeChild(current);
-                      next.mask = null;
-		  });
-
-		  let m = makeMoon();
-		  stage.addChild(m);
-		  stage.addChild(dash);           
-
-		  ARR.push(m);
-		  INDEX++
-
-		  for(var i=0; i < ARR.length; i++){ // remove old moons
-                      if(i < (INDEX-1)){ ARR[i] = null; };
-		  };
-              }
-
-	      
               //--------------------------------------------------------------------------------- tick
               cjs.Ticker.addEventListener('tick', function(){
 
@@ -298,7 +306,7 @@
 		  if(KEYS.arrowleft) { currentMoon.x+= 2 + (currentMoon.moonScale / 2)};
 		  if(KEYS.arrowright){ currentMoon.x-= 2 + (currentMoon.moonScale / 2)};
 		  
-		  let scaleAmt = ((currentMoon.moonScale / 2) / scaleDivisor)
+		  let scaleAmt = ((currentMoon.moonScale / 2) / SCALE_DIVISOR)
 
 		  nextMoon.visible = true;
 		  
@@ -342,14 +350,6 @@
 
               });
 
-	      
-              //------------------------------------------------------------------------------ gameOver
-              function gameOver(){
-
-		  stage.removeAllChildren();
-		  cjs.Ticker.removeAllEventListeners();
-		  alert('game over');
-	      }
 	      
 	  }
 
