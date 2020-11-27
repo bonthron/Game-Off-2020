@@ -15,8 +15,7 @@
 	 For the Moon is Hollow and I Have Touched the Sky
 
 	 there's a fissure in the rock
-	 within
-	 another sphere
+	 another sphere within
 	 and another
 	 infinite concentric systems
 	 defying our cosmology
@@ -48,6 +47,8 @@
 	  let STAGE;
 	  let SCALE_DIVISOR = 100;
           let MOON_COUNT = 0;
+	  let DEPTH = 0;
+	  let DEPTH_SCORED = 0;	  
 	  let startScreen;
 	  
 	  
@@ -202,6 +203,8 @@
 	  
           //----------------------------------------------------------------------------- nextLevel
           function nextLevel(current, next, transPt){
+
+	      DEPTH++;
 	      
 	      let hit = !concentric(DEAD_CENTER,70,transPt,(100 * next.maskScale));
 	      
@@ -223,6 +226,7 @@
                   next.mask.y = DEAD_CENTER.y;
 		  
 	      }else{
+		  DEPTH_SCORED++;
 		  
                   DASH.pass.visible = true;
                   cjs.Tween.get(DASH.pass)
@@ -244,6 +248,8 @@
 	      
 	      ARR.push(m);
 	      INDEX++
+
+	      document.getElementById("depth").innerHTML = DEPTH_SCORED + ":" + DEPTH;
 	      
 	      for(var i=0; i < ARR.length; i++){ // remove old moons
                   if(i < (INDEX-1)){ ARR[i] = null; };
@@ -260,8 +266,11 @@
 	      startScreen.alpha = 1;
 
 	      cjs.Tween.get({}).wait(1000).call(() => {
-		  document.getElementById("splash").style.display = "block";
-		  document.getElementById("canvas1").style.display = "none";	      
+		  document.getElementById("canvasContainer").style.display = "none";	      		  
+		  document.getElementById("splash").style.display = "block";		  
+		  document.getElementById("splash").classList.add("fadein");
+		  document.getElementById("depth").innerHTML = 0 + ":" + 0;
+		  document.getElementById("launch").focus();		  
 	      })
 	  }
 
@@ -279,7 +288,7 @@
 	      STAGE.addChild(startScreen);
 	      
 	      document.getElementById("splash").style.display = "none";
-	      document.getElementById("canvas1").style.display = "block";	      
+	      document.getElementById("canvasContainer").style.display = "block";	      
 
 	      cjs.Tween.get(startScreen).to({alpha:0}, 2000, cjs.Ease.circIn).call(() => {
 		  STAGE.removeChild(startScreen);
@@ -395,7 +404,6 @@
 		  };       
 
               });
-	      
 	  }
 
 	  
@@ -453,8 +461,12 @@
 	  margin:0px auto;
 	  background-color:#111;
 	  width:100%;
-	  display:none;
 	  margin-top:20px;
+	  cursor:none;
+      }
+      
+      #canvasContainer {
+	  display:none;
       }
 
       #launch{
@@ -472,12 +484,24 @@
       h1 {
 	  text-shadow: 2px 2px #000;
       }
+
+      .fadein {
+          animation: fadein 2s;
+      }
+
+      @keyframes fadein {
+	 from { opacity: 0; }
+	  to  { opacity: 1; }
+      }      
     </style>
 
   </head>
   <body>
 
-    <canvas id="canvas1" width="1100" height="500"></canvas>
+    <div id="canvasContainer">
+      <canvas id="canvas1" width="1100" height="500"></canvas>
+      <div id="depth" class="tc pa2" style="width:80px; color:#444;">0:0</div>
+    </div>
 
     <div id="splash" class="ph5-ns pt3 pa3 tl">
 
@@ -485,8 +509,7 @@
 
       <div class="f5 lh-copy mb4">
 	there's a fissure in the rock<br />
-	within<br />
-	another sphere<br />
+	another sphere within<br />
 	and another<br />
 	infinite concentric systems<br />
 	defying our cosmology<br />
@@ -505,7 +528,6 @@
 	</div>
 
 	<img src="keyboard.png" class="w-100" /><br />
-
 
       </div>
     </div>
