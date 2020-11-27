@@ -10,26 +10,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
     <link rel="stylesheet" href="tachyons.min.css" />
-      
+    
     <!-- 
-         Wanderer moon
-         smiling a
-         faintly ironical smile
-         at this
-         brilliant, dew-moistened
-         summer morning,
-         a detached
-         sleepily indifferent
-         smile, a
-         wanderer's smile,
-         if I should
-         buy a shirt
-         your color and
-         put on a necktie
-         sky-blue
-         where would they carry me?
+	 For the Moon is Hollow and I Have Touched the Sky
 
-         - 1917, william carlos williams
+	 there's a fissure in the rock
+	 within
+	 another sphere
+	 and another
+	 infinite concentric systems
+	 defying our cosmology
+	 
+	 - game design by jason bonthron 2020
+	 
       -->
     
     <script src="createjs.min.js"></script>
@@ -38,7 +31,7 @@
       const cjs = createjs;
       
       (function () {
-	      
+	  
           cjs.Ticker.framerate = 60;
           cjs.Ticker.timingMode = cjs.Ticker.RAF;
 
@@ -53,9 +46,10 @@
           let ARR = [];
 	  let DASH;
 	  let STAGE;
-	  let SCALE_DIVISOR = 120;
+	  let SCALE_DIVISOR = 100;
           let MOON_COUNT = 0;
-
+	  let startScreen;
+	  
 	  
 	  //--------------------------------------------------------------------------------- initKeys
 	  function initKeys(){
@@ -142,7 +136,7 @@
 	      return dash;
           }
 
-                    
+          
           //------------------------------------------------------------------------------ makeMoon     
           function makeMoon(){
 
@@ -201,7 +195,7 @@
 	      return c;
           }
 
-	      
+	  
           //----------------------------------------------------------------------------- nextLevel
           function nextLevel(current, next, transPt){
 	      
@@ -252,14 +246,73 @@
 	      };
           }
 	  
-	      
+	  
           //------------------------------------------------------------------------------ gameOver
           function gameOver(){
 
 	      togglePause();
-	      alert('game over');
+	      STAGE.removeAllChildren();	      
+	      STAGE.addChild(startScreen);
+	      startScreen.alpha = 1;
+
+	      cjs.Tween.get({}).wait(1000).call(() => {
+		  document.getElementById("splash").style.display = "block";
+		  document.getElementById("canvas1").style.display = "none";	      
+	      })
 	  }
 
+	  
+	  //--------------------------------------------------------------------------------- start
+	  function start(){
+
+	      let m = makeMoon();
+              m.visible = true;
+              m.mask = null;
+              m.shade.alpha = 0;
+	      m.scale = m.moonScale;	      
+
+	      STAGE.addChild(m);
+	      STAGE.addChild(startScreen);
+	      
+	      document.getElementById("splash").style.display = "none";
+	      document.getElementById("canvas1").style.display = "block";	      
+
+	      cjs.Tween.get(startScreen).to({alpha:0}, 2000, cjs.Ease.circIn).call(() => {
+		  STAGE.removeChild(startScreen);
+		  newGame();
+	      });
+	  }
+
+
+	  //--------------------------------------------------------------------------------- newGame
+	  function newGame(){
+
+              INDEX = 0;
+              ARR = [];
+	      SCALE_DIVISOR = 100;
+
+	      let soundProps = new cjs.PlayPropsConfig().set({loop: -1})
+	      soundInstance = cjs.Sound.play("sound", soundProps);
+
+	      STAGE.removeAllChildren();
+	      
+	      // currentMoon
+              ARR.push(makeMoon());
+              ARR[0].visible = true;
+              ARR[0].mask = null;
+              ARR[0].shade.alpha = 0;
+	      ARR[0].scale = ARR[0].moonScale;	      
+              STAGE.addChild(ARR[0]);
+
+              // nextMoon
+              ARR.push(makeMoon());
+              STAGE.addChild(ARR[1]);
+
+              STAGE.addChild(DASH);
+
+	      PAUSED = false;	      
+	  }
+	  
 	  
 	  //--------------------------------------------------------------------------------- init
 	  function init(){
@@ -269,35 +322,16 @@
               STAGE.x = STAGE.y = 0.5;
 
 	      initKeys();
-	      
-              let soundProps = new cjs.PlayPropsConfig().set({loop: -1})
-              soundInstance = cjs.Sound.play("sound", soundProps);
 
 	      DEAD_CENTER = {
 		  x:(STAGE.canvas.width/2),
 		  y:(STAGE.canvas.height/2)
               };
 
-              // currentMoon
-              ARR.push(makeMoon());
-              ARR[0].visible = true;
-              ARR[0].mask = null;
-              ARR[0].shade.alpha = 0;
-              STAGE.addChild(ARR[0]);
-              
-              // nextMoon
-              ARR.push(makeMoon());
-              ARR[1].visible = true;
-              STAGE.addChild(ARR[1]);
+              DASH = buildDashboard(DEAD_CENTER, viewPortSize);
 
-
-              DASH = buildDashboard(DEAD_CENTER, viewPortSize);          
-              STAGE.addChild(DASH);
-
-
-	      let startScreen = new cjs.Shape();
+	      startScreen = new cjs.Shape();
 	      startScreen.graphics.f("#000").dr(-10,-10, STAGE.canvas.width + 10, STAGE.canvas.width+10);
-	      STAGE.addChild(startScreen);
 
 	      
 
@@ -380,7 +414,12 @@
 	  //--------------------------------------------------------------------------------- load
 	  var queue = new createjs.LoadQueue(true);
 	  queue.installPlugin(cjs.Sound);      
-	  queue.on("complete", function(){ READY = true;          init(); });    
+	  queue.on("complete", function(){
+	      init();
+	      document.getElementById("launch").style.visibility = "visible";
+	      document.getElementById("launch").focus();
+	      document.getElementById("launch").addEventListener("click", start)
+	  });    
 	  queue.on("error", function(e){ console.log(e); });    
 
 	  queue.loadManifest([
@@ -391,6 +430,7 @@
 	  ]);
 	  
       })();
+      
     </script>
 
     <style>
@@ -403,46 +443,69 @@
           text-align:center;
           background-color:#111;
       }
-      canvas { display:block; margin:0px auto;}
+
+      #canvas1 {
+	  display:block;
+	  margin:0px auto;
+	  background-color:#111;
+	  width:100%;
+	  display:none;
+	  margin-top:20px;
+      }
+
+      #launch{
+	  background-color:rgba(255,255,255,0.2);
+	  cursor:pointer;
+	  visibility:hidden;
+      }
+      #launch:hover, #launch:active {
+	  background-color:rgba(255,255,255,0.5);
+      }
+      
+      #splash {
+	  background: url("moon.png") no-repeat fixed calc(100% + 100px) -100px;
+      }
+      h1 {
+	  text-shadow: 2px 2px #000;
+      }
     </style>
 
   </head>
   <body>
 
-    <div>
-      <!--    <canvas id="canvas1" width="1100" height="500" style="background-color:#000; width:100%;"></canvas>-->
+    <canvas id="canvas1" width="1100" height="500"></canvas>
 
-      <div class="ph5-ns pa3 tl">
-	<h1 class="f2 lh-title">For the Moon is Hollow<br />and I Have Touched the Sky</h1>
+    <div id="splash" class="ph5-ns pt3 pa3 tl">
 
-	<div class="f5">
-	  there's a fissure in the rock<br />
-	  within<br />
-	  another sphere<br />
-	  then another<br />
-	  infinite concentric systems<br />
-	  defying our cosmology<br />
+      <h1 class="f2 lh-title">for the moon is hollow<br />and i have touched the sky</h1>
+
+      <div class="f5 lh-copy mb4">
+	there's a fissure in the rock<br />
+	within<br />
+	another sphere<br />
+	and another<br />
+	infinite concentric systems<br />
+	defying our cosmology<br />
+      </div>
+
+      <div class="tc">
+	<button id="launch" class="f4 br2 ba bw1 ph3 pv2 mb4 dib b--near-white near-white">Begin &nbsp;Launch &nbsp;Sequence</button><br />
+      </div>
+      
+      <div class="w-100" style="max-width:400px;">
+
+	<div class="f5 tl mb2">
+	  Arrow Keys = move<br />
+	  WASD Keys = move<br />
+	  Spacebar = pause<br />
 	</div>
-	
-	<div class="tc">
 
-	  <button class="f4 br2 ba bw1 ph3 pv2 mv5 dib b--near-white near-white" style="background-color:rgba(255,255,255,0.2); cursor:pointer;">Begin &nbsp;Launch &nbsp;Sequence</button><br />
+	<img src="keyboard.png" class="w-100" /><br />
 
-	  <div class="w-100" style="max-width:600px; margin-left:auto; margin-right:auto;">
-	    <img src="keyboard.png" class="w-100"><br />
-
-	    <div class="f5 tl">
-	      Arrow Keys = move<br />
-	      WASD Keys = move<br />
-	      spacebar = pause<br />
-	    </div>
-	  </div>		  
-	</div>
-	
 
       </div>
     </div>
-    
+
   </body>
 </html>
 
