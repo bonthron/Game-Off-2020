@@ -173,12 +173,15 @@
 	      bit.x = bit.y = -1816;
 	      inner.addChild(bit);
 
-	      if((DEPTH > 1) && (Math.random() < 0.3)){
+	      if((DEPTH > 3) && (Math.random() < .3)){
 		  let moai = new cjs.Bitmap(queue.getResult("moai"));
-		  moai.regX = 100; moai.regY = 100;
-		  moai.x = DEAD_CENTER.x + Math.floor(random(300, 500));
+		  moai.regX = 100;
+		  moai.regY = 200;		  
+		  moai.x = DEAD_CENTER.x + random(100,150);
+		  moai.y = DEAD_CENTER.y;
+		  moai.alpha = 0.9;
 		  let angle = Math.atan2((moai.y - DEAD_CENTER.y), (moai.x - DEAD_CENTER.x));	      
-		  moai.rotation = use360circle(radToDegree(angle)) + 90;
+		  moai.rotation = use360circle(radToDegree(angle)) + 180;
 		  inner.addChild(moai);
 	      };
 	      
@@ -270,6 +273,14 @@
 	      ARR.push(m);
 	      INDEX++
 
+	      if((DEPTH > 3) && (DEPTH % 6  == 0)){
+		  let ufo = new cjs.Bitmap(queue.getResult("ufo"));
+		  ufo.x = DEAD_CENTER.x - 2000;
+		  ufo.y = DEAD_CENTER.y + 50
+		  STAGE.addChild(ufo);
+		  cjs.Tween.get(ufo).to({x:2000, y: (DEAD_CENTER.y + 50) - random(0,1000)}, 5000).call(() => { STAGE.removeChild(ufo); })
+	      }
+	      
 	      document.getElementById("depth").innerHTML = DEPTH_SCORED + ":" + DEPTH;
 	      
 	      for(var i=0; i < ARR.length; i++){ // remove old moons
@@ -347,7 +358,7 @@
               STAGE.addChild(ARR[1]);
 
               STAGE.addChild(DASH);
-
+	      
 	      PAUSED = false;	      
 	  }
 	  
@@ -477,7 +488,8 @@
               {id:"shadow", src:"shadow5.png"},
               {id:"sight", src:"sight.png"},
               {id:"sound", src:"DescenteInfinie.ogg"},
-              {id:"moai", src:"moai.png"}       	      
+              {id:"moai", src:"moai.png"},
+              {id:"ufo", src:"ufo.png"}       	     	      
 	  ]);
 	  
       })();
