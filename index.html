@@ -173,6 +173,15 @@
 	      bit.x = bit.y = -1816;
 	      inner.addChild(bit);
 
+	      if((DEPTH > 1) && (Math.random() < 0.3)){
+		  let moai = new cjs.Bitmap(queue.getResult("moai"));
+		  moai.regX = 100; moai.regY = 100;
+		  moai.x = DEAD_CENTER.x + Math.floor(random(300, 500));
+		  let angle = Math.atan2((moai.y - DEAD_CENTER.y), (moai.x - DEAD_CENTER.x));	      
+		  moai.rotation = use360circle(radToDegree(angle)) + 90;
+		  inner.addChild(moai);
+	      };
+	      
 	      let colors = ["#00FFFF", "#FF69B4", "#B200FF", "#32CD32", "#FF1493"];
 	      if((DEPTH > 1) && (DEPTH % 5 == 0)){
 		  let color = new cjs.Shape();
@@ -192,7 +201,8 @@
                   x.alpha = Math.random();
                   inner.addChild(x);
 	      }
-
+	      	      
+	      
 	      let trackdot = new cjs.Shape();
 	      trackdot.graphics.f("#ccc").dc(0,0,1);
 	      trackdot.x = random(100,350);
@@ -435,6 +445,20 @@
               var d = getDistance(center1, center2);
               return ((d + radius1) < radius2);
 	  }
+	  
+	  function radToDegree(r){
+	      return r * 180/Math.PI;
+	  }
+
+	  function use360circle(d){
+	      if(d < 0){
+		  d = -d;
+	      }else{
+		  d = (180 - d) + 180;
+	      };
+	      return d;
+	  };
+	  
 
 	  
 	  //--------------------------------------------------------------------------------- load
@@ -452,7 +476,8 @@
               {id:"moonJPG", src:"moonOpt.jpg"},
               {id:"shadow", src:"shadow5.png"},
               {id:"sight", src:"sight.png"},
-              {id:"sound", src:"DescenteInfinie.ogg"}       
+              {id:"sound", src:"DescenteInfinie.ogg"},
+              {id:"moai", src:"moai.png"}       	      
 	  ]);
 	  
       })();
