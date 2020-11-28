@@ -268,7 +268,6 @@
 	      
 	      let m = makeMoon();
 	      STAGE.addChild(m);
-	      STAGE.addChild(DASH);           
 	      
 	      ARR.push(m);
 	      INDEX++
@@ -280,6 +279,8 @@
 		  STAGE.addChild(ufo);
 		  cjs.Tween.get(ufo).to({x:2000, y: (DEAD_CENTER.y + 50) - random(0,1000)}, 5000).call(() => { STAGE.removeChild(ufo); })
 	      }
+	      
+	      STAGE.addChild(DASH);
 	      
 	      document.getElementById("depth").innerHTML = DEPTH_SCORED + ":" + DEPTH;
 	      
