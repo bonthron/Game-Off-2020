@@ -16,7 +16,6 @@
 
 	 there's a fissure in the rock
 	 another sphere within
-	 and another
 	 infinite concentric systems
 	 defying our cosmology
 	 
@@ -82,59 +81,35 @@
 		  if(KEYS.hasOwnProperty(k)){ KEYS[k] = false; };
               };
 
-
-		  
-	      document.getElementById("touchUp").addEventListener("touchstart", () => {
-		  KEYS["arrowup"] = true;
-	      });
-	      document.getElementById("touchUp").addEventListener("touchend", () => {
-		  KEYS["arrowup"] = false;
-	      });	      
-	      document.getElementById("touchUp").addEventListener("touchmove", () => {
-		  KEYS["arrowup"] = true;
-	      });	      
-	      document.getElementById("touchUp").addEventListener("touchcancel", () => {
-		  KEYS["arrowup"] = false;
-	      });
 	      
-	      document.getElementById("touchDown").addEventListener("touchstart", () => {
-		  KEYS["arrowdown"] = true;
-	      });
-	      document.getElementById("touchDown").addEventListener("touchend", () => {
-		  KEYS["arrowdown"] = false;
-	      });
-	      document.getElementById("touchDown").addEventListener("touchmove", () => {
-		  KEYS["arrowdown"] = true;
-	      });	      
-	      document.getElementById("touchDown").addEventListener("touchcancel", () => {
-		  KEYS["arrowdown"] = false;
-	      });
+	      function touchDistance(e){
+		  let touch = e.touches[0] || e.changedTouches[0];
 
-	      document.getElementById("touchLeft").addEventListener("touchstart", () => {
-		  KEYS["arrowleft"] = true;
-	      });
-	      document.getElementById("touchLeft").addEventListener("touchend", () => {
-		  KEYS["arrowleft"] = false;
-	      });
-	      document.getElementById("touchLeft").addEventListener("touchmove", () => {
-		  KEYS["arrowleft"] = true;
-	      });	      
-	      document.getElementById("touchLeft").addEventListener("touchcancel", () => {
-		  KEYS["arrowleft"] = false;
-	      });	      
+		  let el = document.getElementById("touchControls");
+		  let offset = findPos(el)
+
+		  var x = (touch.pageX - offset[0]);
+		  var y = (touch.pageY - offset[1]);
+
+		  KEYS["arrowup"]    = (getDistance({x:x,y:y}, {x:75,y:25}) <= 30);
+		  KEYS["arrowdown"]  = (getDistance({x:x,y:y}, {x:75,y:125}) <= 30);
+		  KEYS["arrowleft"]  = (getDistance({x:x,y:y}, {x:25,y:75}) <= 30);
+		  KEYS["arrowright"] = (getDistance({x:x,y:y}, {x:125,y:75}) <= 30);		  
+	      }
 	      
-	      document.getElementById("touchRight").addEventListener("touchstart", () => {
-		  KEYS["arrowright"] = true;
+	      document.getElementById("touchControls").addEventListener("touchstart", (e) => {
+		  touchDistance(e);
 	      });
-	      document.getElementById("touchRight").addEventListener("touchend", () => {
+	      document.getElementById("touchControls").addEventListener("touchmove", (e) => {
+		  touchDistance(e);
+	      });	      	      
+	      document.getElementById("touchControls").addEventListener("touchend", (e) => {
+		  KEYS["arrowup"] = false;
+		  KEYS["arrowdown"] = false;
+		  KEYS["arrowleft"] = false;
 		  KEYS["arrowright"] = false;
 	      });	      	      
-	      document.getElementById("touchRight").addEventListener("touchmove", () => {
-		  KEYS["arrowright"] = true;
-	      });	      
-	      document.getElementById("touchRight").addEventListener("touchcancel", () => {
-		  KEYS["arrowright"] = false;
-	      });
+
 	      
 	  }
 
@@ -442,6 +417,7 @@
 	      startScreen = new cjs.Shape();
 	      startScreen.graphics.f("#111").dr(-10,-10, STAGE.canvas.width + 10, STAGE.canvas.width+10);
 
+	      
 
               //--------------------------------------------------------------------------------- tick
               cjs.Ticker.addEventListener('tick', function(){
@@ -451,11 +427,13 @@
 		  let currentMoon = ARR[INDEX];
 
 		  let nextMoon = ARR[INDEX + 1];
+
+		  let movementAmt = DEVICE == "mobile" ? 4 : 2;
 		  
-		  if(KEYS.arrowdown) { currentMoon.y-= 2 + (currentMoon.moonScale / 2)};
-		  if(KEYS.arrowup)   { currentMoon.y+= 2 + (currentMoon.moonScale / 2)};
-		  if(KEYS.arrowleft) { currentMoon.x+= 2 + (currentMoon.moonScale / 2)};
-		  if(KEYS.arrowright){ currentMoon.x-= 2 + (currentMoon.moonScale / 2)};
+		  if(KEYS.arrowdown) { currentMoon.y-= movementAmt + (currentMoon.moonScale / 2)};
+		  if(KEYS.arrowup)   { currentMoon.y+= movementAmt + (currentMoon.moonScale / 2)};
+		  if(KEYS.arrowleft) { currentMoon.x+= movementAmt + (currentMoon.moonScale / 2)};
+		  if(KEYS.arrowright){ currentMoon.x-= movementAmt + (currentMoon.moonScale / 2)};
 		  
 		  let scaleAmt = ((currentMoon.moonScale / 2) / SCALE_DIVISOR)
 
@@ -530,6 +508,19 @@
 	      };
 	      return d;
 	  };
+
+	  function findPos(obj) { // ppk :)
+	      var curleft = curtop = 0;
+	      
+	      if (obj.offsetParent) {
+		  do {
+		      curleft += obj.offsetLeft;
+		      curtop += obj.offsetTop;
+		  } while (obj = obj.offsetParent);
+		  
+		  return [curleft, curtop];
+	      }
+	  }	  
 	  
 	  
 	  //--------------------------------------------------------------------------------- load
@@ -667,7 +658,9 @@
 
       #touchControls {
 	  -webkit-user-select: none;
-	  user-select: none;	  
+	  user-select: none;
+	  touch-action: manipulation;
+	  font-size:0px;
       }
 
       .touchSpace {
@@ -677,7 +670,8 @@
 	  background-color:#fff;
 	  display:inline-block;
 	  -webkit-user-select: none;
-	  user-select: none;	  
+	  user-select: none;
+	  touch-action: manipulation;	  
       }
 
       .touchNone #touchControls {
@@ -763,7 +757,6 @@
       <div class="f5 lh-copy mb4">
 	there's a fissure in the rock<br />
 	another sphere within<br />
-	and another<br />
 	infinite concentric systems<br />
 	defying our cosmology<br />
       </div>
@@ -789,9 +782,10 @@
 	</div>
 
 
-	<div style="position:absolute; bottom:10px; right:10px; color:#444;">&copy; 2020 jason bonthron</div>
+
 	
       </div>
+	<div class="tr">&copy; 2020 jason bonthron</div>      
     </div>
 
   </body>
