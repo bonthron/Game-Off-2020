@@ -87,6 +87,7 @@
 	  //------------------------------------------------------------------------------- togglePause
 	  function togglePause(){
 
+	      if(ARR.length < 1){ return;};
 	      PAUSED = !PAUSED;
 	      soundInstance.paused = !soundInstance.paused;
 	  }
@@ -299,7 +300,8 @@
 	      startScreen.alpha = 1;
 
 	      cjs.Tween.get({}).wait(1000).call(() => {
-		  document.getElementById("canvasContainer").style.display = "none";	      		  
+		  document.getElementById("gameContainer").style.display = "none";		  
+//		  document.getElementById("canvasContainer").style.display = "none";	      		  
 		  document.getElementById("splash").style.display = "block";		  
 		  document.getElementById("splash").classList.add("fadein");
 		  document.getElementById("depth").innerHTML = 0 + ":" + 0;
@@ -321,7 +323,8 @@
 	      STAGE.addChild(startScreen);
 	      
 	      document.getElementById("splash").style.display = "none";
-	      document.getElementById("canvasContainer").style.display = "block";	      
+	      //document.getElementById("canvasContainer").style.display = "block";	      
+	      document.getElementById("gameContainer").style.display = "block";		  
 
 	      cjs.Tween.get(startScreen).to({alpha:0}, 2000, cjs.Ease.circIn).call(() => {
 		  STAGE.removeChild(startScreen);
@@ -471,7 +474,6 @@
 	      return d;
 	  };
 	  
-
 	  
 	  //--------------------------------------------------------------------------------- load
 	  var queue = new createjs.LoadQueue(true);
@@ -484,20 +486,77 @@
 	  });    
 	  queue.on("error", function(e){ console.log(e); });    
 
-	  queue.loadManifest([
-              {id:"moonJPG", src:"moonOpt.jpg"},
-              {id:"shadow", src:"shadow5.png"},
-              {id:"sight", src:"sight.png"},
-              {id:"sound", src:"DescenteInfinie.ogg"},
-              {id:"moai", src:"moai.png"},
-              {id:"ufo", src:"ufo.png"}       	     	      
-	  ]);
+	  
+	  window.onload = function(){
+
+	      queue.loadManifest([
+		  {id:"moonJPG", src:"moonOpt.jpg"},
+		  {id:"shadow", src:"shadow5.png"},
+		  {id:"sight", src:"sight.png"},
+		  {id:"sound", src:"DescenteInfinie.ogg"},
+		  {id:"moai", src:"moai.png"},
+		  {id:"ufo", src:"ufo.png"}       	     	      
+	      ]);
+	  };
 	  
       })();
+
+
+      //--------------------------------------------------------------------------------- deviceChange
+      let DEVICE = "desktop";
+      let orientation = (window.innerWidth < window.innerHeight) ? "v" : "h";
+
+      window.addEventListener("resize", () => {
+
+	  orientation = (window.innerWidth < window.innerHeight) ? "v" : "h";
+
+	  if(DEVICE == "mobile"){
+	      let flx = document.getElementById("flexControl");	      
+
+	      if(orientation == "v"){
+		  flx.classList.remove("touchHorizontal");		  		  
+		  flx.classList.add("touchVertical");
+	      }else{
+		  flx.classList.remove("touchVertical");		  		  
+		  flx.classList.add("touchHorizontal");
+	      };
+	  };
+      });
+      
+      function deviceChange(input){
+
+	  let flx = document.getElementById("flexControl");
+	  let kc = document.getElementById("keyControls");
+
+	  if(input.value == "mobile"){
+	      DEVICE = "mobile";
+	      kc.style.display = "none";
+
+	      if(orientation == "v"){
+		  flx.classList.remove("touchNone");
+		  flx.classList.remove("touchHorizontal");		  		  
+		  flx.classList.add("touchVertical");
+	      }else{
+		  flx.classList.remove("touchNone");
+		  flx.classList.remove("touchVertical");		  		  
+		  flx.classList.add("touchHorizontal");
+	      };
+
+	  }else{
+	      DEVICE = "desktop";	      
+	      kc.style.display = "block";
+	      flx.classList.remove("touchHorizontal");
+	      flx.classList.remove("touchVertical");		  		  
+	      flx.classList.add("touchNone");	      
+	  };
+      };
+
       
     </script>
 
     <style>
+      html, body { height:100%; }
+
       body {
 	  padding:0;
 	  marign:0;
@@ -513,13 +572,13 @@
 	  margin:0px auto;
 	  background-color:#111;
 	  width:100%;
-	  margin-top:20px;
 	  cursor:none;
       }
       
-      #canvasContainer {
+      #gameContainer {
 	  display:none;
-      }
+	  height:100%;
+      }      
 
       #launch{
 	  background-color:rgba(255,255,255,0.2);
@@ -544,17 +603,91 @@
       @keyframes fadein {
 	  from { opacity: 0; }
 	  to  { opacity: 1; }
+      }
+
+      label {display:inline-block; cursor:pointer; }
+
+
+      .touchSpace {
+	  width:50px;
+	  height:50px;
+	  border-radius:50%;
+	  background-color:#fff;
+	  display:inline-block;
+      }
+
+      .touchNone #touchControls {
+	  display:none;
+      }
+      .touchNone #canvasWrap {
+	  flex:1 1;
+      }
+
+      .touchHorizontal #touchControls {
+	  width:150px;
+	  font-size:0px;
+	  text-align:left;
+	  flex:0 0 150px;	  
+      }
+
+      .touchHorizontal #canvasWrap {
+	  flex:1 1;
+      }
+
+      .touchVertical #touchControls {
+	  width:150px;
+	  font-size:0px;
+	  text-align:left;
+	  flex:1 0;
+	  margin-left:auto;
+	  margin-right:auto;	  
+      }
+
+      .touchVertical #canvasWrap {
+	  flex:4 1;
+      }
+      
+      #flexControl {
+	  display:flex;
+      }
+
+      #flexControl.touchHorizontal {
+	  align-items:center;	  
+      }
+
+      #flexControl.touchVertical {
+	  flex-direction:column;
+	  height:calc(100% - 60px);
       }      
+      
     </style>
 
   </head>
   <body>
 
-    <div id="canvasContainer">
-      <canvas id="canvas1" width="1100" height="500"></canvas>
-      <div id="depth" class="tc pa2" style="width:80px; color:#444;">0:0</div>
+    
+    <!-- ======================================================  GAME CONTAINER  -->
+    <div id="gameContainer">
+
+      <div id="depth" class="tc pa2" style="width:80px; color:#444;">0:0</div>      
+
+      <div id="flexControl" class="touchNone">
+
+	<div id="canvasWrap">
+	  <canvas id="canvas1" width="1100" height="500" style="display:block; width:100%;"></canvas>      
+	</div>
+
+	<div id="touchControls">
+	  <div class="touchSpace" style="margin-left:50px;"></div><br />
+	  <div class="touchSpace"></div><div class="touchSpace" style="margin-left:50px;"></div><br />	  
+	  <div class="touchSpace" style="margin-left:50px;"></div>	  
+	</div>
+	
+      </div>            
     </div>
 
+
+    <!-- ======================================================  SPLASH  -->
     <div id="splash" class="ph5-ns pt3 pa3 tl">
 
       <h1 class="f2 lh-title">for the moon is hollow<br />and i have touched the sky</h1>
@@ -568,18 +701,25 @@
       </div>
 
       <div class="tc">
-	<button id="launch" class="f4 br2 ba bw1 ph3 pv2 mb4 dib b--near-white near-white">Begin &nbsp;Launch &nbsp;Sequence</button><br />
+	<button id="launch" class="f4 br2 ba bw1 ph3 pv2 mb4 dib b--near-white near-white">Begin &nbsp;Launch &nbsp;Sequence</button>
       </div>
       
       <div class="w-100" style="max-width:400px;">
 
-	<div class="f5 tl mb2">
-	  Arrow Keys = move<br />
-	  WASD Keys = move<br />
-	  Spacebar = pause<br />
+	<div class="pb4">
+	  <input type="radio" name="device" id="deviceDesktop" value="desktop" onchange="deviceChange(this)" checked />
+	  <label for="deviceDesktop" class="f4 mb3 ml2">Desktop</label><br />
+	  <input type="radio" name="device" id="deviceMobile" value="mobile" onchange="deviceChange(this)" />
+	  <label for="deviceMobile" class="f4 ml2">Mobile</label>
 	</div>
 
-	<img src="keyboard.png" class="w-100" /><br />
+	<div id="keyControls" class="f5 tl mb2">
+	  Arrow Keys = move<br />
+	  WASD Keys = move<br />	  
+	  Spacebar = pause<br />
+	  <img src="keyboard.png" class="w-100 mt2" /><br />	  
+	</div>
+
 
 	<div style="position:absolute; bottom:10px; right:10px; color:#444;">&copy; 2020 jason bonthron</div>
 	
