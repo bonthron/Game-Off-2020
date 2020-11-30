@@ -1,7 +1,7 @@
 # For the Moon is Hollow and I Have Touched the Sky
 ## Entry for GitHub/Itch.io Game Off 2020 
 
-Play it here: [https://www.bonthron.com/moon](https://www.bonthron.com/moon)
+### Play it here: [https://www.bonthron.com/moon](https://www.bonthron.com/moon)
 
 ![cover](images/thumb.png?raw=true)
 
